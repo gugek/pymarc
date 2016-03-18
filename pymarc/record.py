@@ -228,7 +228,7 @@ class Record(Iterator):
 
         """
         # extract record leader
-        self.leader = marc[0:LEADER_LEN].decode('ascii')
+        self.leader = marc[0:LEADER_LEN].decode('ascii', utf8_handling)
         if len(self.leader) != LEADER_LEN:
             raise RecordLeaderInvalid
 
@@ -246,7 +246,8 @@ class Record(Iterator):
 
         # extract directory, base_address-1 is used since the
         # director ends with an END_OF_FIELD byte
-        directory = marc[LEADER_LEN:base_address-1].decode('ascii')
+        directory = marc[LEADER_LEN:base_address-1].decode('ascii',
+                                                           utf8_handling)
 
         # determine the number of fields in record
         if len(directory) % DIRECTORY_ENTRY_LEN != 0:
