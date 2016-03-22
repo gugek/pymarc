@@ -286,7 +286,7 @@ class Record(Iterator):
                 # blank spaces, and any more than 2 are dropped on the floor.
 
                 first_indicator = second_indicator = ' '
-                subs[0] = subs[0].decode('ascii')
+                subs[0] = subs[0].decode('ascii', utf8_handling)
                 if len(subs[0]) == 0:
                     logging.warning("missing indicators: %s", entry_data)
                     first_indicator = second_indicator = ' '
@@ -305,7 +305,7 @@ class Record(Iterator):
                 for subfield in subs[1:]:
                     if len(subfield) == 0:
                         continue
-                    code = subfield[0:1].decode('ascii')
+                    code = subfield[0:1].decode('ascii', utf8_handling)
                     data = subfield[1:]
 
                     if to_unicode:
