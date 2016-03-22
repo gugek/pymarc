@@ -1,8 +1,8 @@
-version = '3.1.1'
+version = '3.1.1.0'
 
 from setuptools import setup
 
-install_requires = ['six']
+install_requires = ['six', 'unidecode']
 try:
     import xml.etree
 except ImportError:
@@ -23,9 +23,9 @@ Topic :: Text Processing :: General
 """
 
 setup(
-    name = 'pymarc',
+    name = 'pymarc-unicdecode',
     version = version,
-    url = 'http://github.com/edsu/pymarc',
+    url = 'http://github.com/gugek/pymarc',
     author = 'Ed Summers',
     author_email = 'ehs@pobox.com',
     license = 'http://www.opensource.org/licenses/bsd-license.php',
