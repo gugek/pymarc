@@ -1,7 +1,7 @@
 import re
 import six
 import logging
-import unidecode
+from unidecode import unidecode
 from six import Iterator
 
 from pymarc.exceptions import BaseAddressInvalid, RecordLeaderInvalid, \
@@ -300,7 +300,7 @@ class Record(Iterator):
                     subs[0] = subs[0].decode('ascii')
                 except UnicodeDecodeError:
                     if utf8_handling == 'replace':
-                        subs[0] = unidecode.unidecode(subs[0])
+                        subs[0] = unidecode(subs[0])
                     else:
                         raise
                 if len(subs[0]) == 0:
