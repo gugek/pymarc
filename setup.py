@@ -23,7 +23,7 @@ Topic :: Text Processing :: General
 """
 
 setup(
-    name = 'pymarc-unicdecode',
+    name = 'pymarc-unidecode',
     version = version,
     url = 'http://github.com/gugek/pymarc',
     author = 'Ed Summers',
