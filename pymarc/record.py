@@ -256,7 +256,8 @@ class Record(Iterator):
             directory = marc[LEADER_LEN:base_address-1].decode('ascii')
         except UnicodeDecodeError:
             if utf8_handling == 'replace':
-                directory = unidecode(marc[LEADER_LEN:base_address-1])
+                directory = unidecode(marc[LEADER_LEN:base_address-1]\
+                                          .decode(encoding))
             else:
                 raise
         # determine the number of fields in record
@@ -300,7 +301,8 @@ class Record(Iterator):
                     subs[0] = subs[0].decode('ascii')
                 except UnicodeDecodeError:
                     if utf8_handling == 'replace':
-                        subs[0] = unidecode(subs[0])
+                        # subs[0] is a string
+                        subs[0] = unidecode(subs[0].decode(encoding))
                     else:
                         raise
                 if len(subs[0]) == 0:
@@ -325,7 +327,7 @@ class Record(Iterator):
                         code = subfield[0:1].decode('ascii')
                     except UnicodeDecodeError:
                         if utf8_handling == 'replace':
-                            code = unidecode(subfield[0:1])
+                            code = unidecode(subfield[0:1]).decode(encoding)
                         else:
                             raise
                     data = subfield[1:]
