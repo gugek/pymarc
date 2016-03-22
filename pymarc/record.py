@@ -231,7 +231,10 @@ class Record(Iterator):
         try:
             self.leader = marc[0:LEADER_LEN].decode('ascii')
         except UnicodeDecodeError:
-            self.leader = unidecode(marc[0:LEADER_LEN].decode('ascii'))
+            if utf8_handling == 'replace':
+                self.leader = unidecode(marc[0:LEADER_LEN].decode('ascii'))
+            else:
+                raise
         if len(self.leader) != LEADER_LEN:
             raise RecordLeaderInvalid
 
@@ -251,7 +254,7 @@ class Record(Iterator):
         # director ends with an END_OF_FIELD byte
         try:
             directory = marc[LEADER_LEN:base_address-1].decode('ascii')
-        except UnicodeDecode:
+        except UnicodeDecodeError:
             if utf8_handling == 'replace':
                 directory = unidecode(marc[LEADER_LEN:base_address-1])
             else:
