@@ -327,7 +327,7 @@ class Record(Iterator):
                         code = subfield[0:1].decode('ascii')
                     except UnicodeDecodeError:
                         if utf8_handling == 'replace':
-                            code = unidecode(subfield[0:1]).decode(encoding)
+                            code = unidecode(subfield[0:1].decode(encoding))
                         else:
                             raise
                     data = subfield[1:]
