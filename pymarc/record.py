@@ -1,7 +1,7 @@
 import re
 import six
 import logging
-
+import unidecode
 from six import Iterator
 
 from pymarc.exceptions import BaseAddressInvalid, RecordLeaderInvalid, \
@@ -228,7 +228,10 @@ class Record(Iterator):
 
         """
         # extract record leader
-        self.leader = marc[0:LEADER_LEN].decode('ascii', utf8_handling)
+        try:
+            self.leader = marc[0:LEADER_LEN].decode('ascii')
+        except UnicodeDecodeError:
+            self.leader = unidecode(marc[0:LEADER_LEN].decode('ascii'))
         if len(self.leader) != LEADER_LEN:
             raise RecordLeaderInvalid
 
@@ -246,9 +249,13 @@ class Record(Iterator):
 
         # extract directory, base_address-1 is used since the
         # director ends with an END_OF_FIELD byte
-        directory = marc[LEADER_LEN:base_address-1].decode('ascii',
-                                                           utf8_handling)
-
+        try:
+            directory = marc[LEADER_LEN:base_address-1].decode('ascii')
+        except UnicodeDecode:
+            if utf8_handling == 'replace':
+                directory = unidecode(marc[LEADER_LEN:base_address-1])
+            else:
+                raise
         # determine the number of fields in record
         if len(directory) % DIRECTORY_ENTRY_LEN != 0:
             raise RecordDirectoryInvalid
@@ -286,7 +293,13 @@ class Record(Iterator):
                 # blank spaces, and any more than 2 are dropped on the floor.
 
                 first_indicator = second_indicator = ' '
-                subs[0] = subs[0].decode('ascii', utf8_handling)
+                try:
+                    subs[0] = subs[0].decode('ascii')
+                except UnicodeDecodeError:
+                    if utf8_handling == 'replace':
+                        subs[0] = unidecode.unidecode(subs[0])
+                    else:
+                        raise
                 if len(subs[0]) == 0:
                     logging.warning("missing indicators: %s", entry_data)
                     first_indicator = second_indicator = ' '
@@ -305,9 +318,14 @@ class Record(Iterator):
                 for subfield in subs[1:]:
                     if len(subfield) == 0:
                         continue
-                    code = subfield[0:1].decode('ascii', utf8_handling)
+                    try:
+                        code = subfield[0:1].decode('ascii')
+                    except UnicodeDecodeError:
+                        if utf8_handling == 'replace':
+                            code = unidecode(subfield[0:1])
+                        else:
+                            raise
                     data = subfield[1:]
-
                     if to_unicode:
                         if self.leader[9] == 'a' or force_utf8:
                             data = data.decode('utf-8', utf8_handling)
