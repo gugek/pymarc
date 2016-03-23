@@ -67,6 +67,7 @@ class Record(Iterator):
         self.fields = list()
         self.pos = 0
         self.force_utf8 = force_utf8
+        self.errors = []
         if len(data) > 0:
             self.decode_marc(data, to_unicode=to_unicode,
                              force_utf8=force_utf8,
@@ -232,7 +233,12 @@ class Record(Iterator):
             self.leader = marc[0:LEADER_LEN].decode('ascii')
         except UnicodeDecodeError:
             if utf8_handling == 'replace':
-                self.leader = unidecode(marc[0:LEADER_LEN].decode('ascii'))
+                self.leader = ''
+                for c in marc[0:LEADER_LEN]:
+                    if ord(c) > 127:
+                        c = ' '
+                    self.leader += c
+                self.errors.append("decode error in leader")
             else:
                 raise
         if len(self.leader) != LEADER_LEN:
@@ -257,7 +263,8 @@ class Record(Iterator):
         except UnicodeDecodeError:
             if utf8_handling == 'replace':
                 directory = unidecode(marc[LEADER_LEN:base_address-1]\
-                                          .decode(encoding))
+                                          .decode(encoding, utf8_handling))
+                self.errors.append("decode error directory")
             else:
                 raise
         # determine the number of fields in record
@@ -302,7 +309,10 @@ class Record(Iterator):
                 except UnicodeDecodeError:
                     if utf8_handling == 'replace':
                         # subs[0] is a string
-                        subs[0] = unidecode(subs[0].decode(encoding))
+                        subs[0] = unidecode(subs[0].decode(encoding,
+                                                           utf8_handling))
+                        self.errors.append("tag {0}: utf8 error in indicators"\
+                                           .format(entry_tag))
                     else:
                         raise
                 if len(subs[0]) == 0:
@@ -327,7 +337,10 @@ class Record(Iterator):
                         code = subfield[0:1].decode('ascii')
                     except UnicodeDecodeError:
                         if utf8_handling == 'replace':
-                            code = unidecode(subfield[0:1].decode(encoding))
+                            code = unidecode(subfield[0:1].decode(encoding,
+                                                 utf8_handling))
+                            self.errors.append("tag {0}: utf8 - sf code {1}"\
+                                                   .format(entry_tag, code))
                         else:
                             raise
                     data = subfield[1:]
