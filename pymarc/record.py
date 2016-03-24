@@ -238,7 +238,7 @@ class Record(Iterator):
                     if ord(c) > 127:
                         c = ' '
                     self.leader += c
-                self.errors.append("decode error in leader")
+                logging.error("leader decode error: {0}".format(self.leader))
             else:
                 raise
         if len(self.leader) != LEADER_LEN:
@@ -264,7 +264,8 @@ class Record(Iterator):
             if utf8_handling == 'replace':
                 directory = unidecode(marc[LEADER_LEN:base_address-1]\
                                           .decode(encoding, utf8_handling))
-                self.errors.append("decode error directory")
+                message = "directory error: ".format(directory)
+                logging.error("{0}".format(message))
             else:
                 raise
         # determine the number of fields in record
@@ -311,25 +312,35 @@ class Record(Iterator):
                         # subs[0] is a string
                         subs[0] = unidecode(subs[0].decode(encoding,
                                                            utf8_handling))
-                        self.errors.append("tag {0}: utf8 error in indicators"\
-                                           .format(entry_tag))
+                        message = "tag {0}: utf8 error in indicators"\
+                                           .format(entry_tag)
+                        if self['001']:
+                            message = "=001 {0}: ".format(self['001'].data)\
+                                + message
+                        self.errors.append(message)
+                        logging.error("{0}".format(message))
                     else:
                         raise
+                sf_warning = None
                 if len(subs[0]) == 0:
-                    logging.warning("missing indicators: %s", entry_data)
+                    sf_warning = "missing indicators: %s" % entry_data
                     first_indicator = second_indicator = ' '
                 elif len(subs[0]) == 1:
-                    logging.warning("only 1 indicator found: %s", entry_data)
+                    sf_warning = "1 indicator found: %s" % entry_data
                     first_indicator = subs[0][0]
                     second_indicator = ' '
                 elif len(subs[0]) > 2:
-                    logging.warning("more than 2 indicators found: %s", entry_data)
+                    sf_warning = "more than 2 indicators found: %s" % entry_data
                     first_indicator = subs[0][0]
                     second_indicator = subs[0][1]
                 else:
                     first_indicator = subs[0][0]
                     second_indicator = subs[0][1]
-
+                if sf_warning:
+                    if self['001']:
+                        sf_warning = "=001 {0}: ".format(self['001'].data) \
+                            + sf_warning
+                    logging.warning(sf_warning)
                 for subfield in subs[1:]:
                     if len(subfield) == 0:
                         continue
@@ -339,8 +350,13 @@ class Record(Iterator):
                         if utf8_handling == 'replace':
                             code = unidecode(subfield[0:1].decode(encoding,
                                                  utf8_handling))
-                            self.errors.append("tag {0}: utf8 - sf code {1}"\
-                                                   .format(entry_tag, code))
+                            message = "tag {0}: utf8 - sf code {1}"\
+                                                   .format(entry_tag, code)
+                            if self['001']:
+                                message = "=001 {0}: ".format(self['001'].data)\
+                                    + message
+                            self.errors.append(message)
+                            logging.error("{0}".format(message))
                         else:
                             raise
                     data = subfield[1:]
